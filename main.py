@@ -76,14 +76,15 @@ def evaluate_resume_with_openai(developer_data: Dict, prompt_template: str) -> s
     Evaluate a developer's resume using OpenAI API with the evaluation prompt.
     
     Args:
-        developer_data (Dict): Developer data containing resume_plain and other fields
+        developer_data (Dict): Developer data containing resume_plain, country, and other fields
         prompt_template (str): The evaluation prompt template from prompt.txt
         
     Returns:
         str: OpenAI API response with evaluation results
     """
-    # Replace the placeholder in the prompt with actual resume data
-    evaluation_prompt = prompt_template.replace("${dev_resume}", developer_data['resume_plain'])
+    # Replace the placeholders in the prompt with actual data
+    evaluation_prompt = prompt_template.replace("{dev_resume}", developer_data.get('resume_plain', ''))
+    evaluation_prompt = evaluation_prompt.replace("{country}", developer_data.get('country_name', ''))
     
     # Call OpenAI API with the evaluation prompt
     return call_openai_api(evaluation_prompt)
@@ -107,7 +108,7 @@ def load_evaluation_prompt(prompt_file: str = "prompt.txt") -> str:
     except FileNotFoundError:
         raise FileNotFoundError(f"Prompt file '{prompt_file}' not found. Please make sure the file exists in the current directory.")
 
-def evaluate_all_developers(df: pd.DataFrame, prompt_template: str, max_developers: int = None, output_file: str = "evaluation_results.json", max_workers: int = 5) -> List[Dict]:
+def evaluate_all_developers(df: pd.DataFrame, prompt_template: str, max_developers: int = None, output_file: str = "evaluation_results.json", max_workers: int = 5, merge_with_existing: bool = False) -> List[Dict]:
     """
     Evaluate all developers in the DataFrame using OpenAI API with parallel processing and incremental saving.
     
@@ -117,6 +118,7 @@ def evaluate_all_developers(df: pd.DataFrame, prompt_template: str, max_develope
         max_developers (int): Maximum number of developers to evaluate (for cost control)
         output_file (str): File to save incremental results
         max_workers (int): Number of parallel workers (default: 5)
+        merge_with_existing (bool): If True, merge new results with existing results from output_file
         
     Returns:
         List[Dict]: List of evaluation results with developer info and OpenAI response
@@ -125,6 +127,13 @@ def evaluate_all_developers(df: pd.DataFrame, prompt_template: str, max_develope
     import time
     from concurrent.futures import ThreadPoolExecutor, as_completed
     from threading import Lock
+    
+    # Load existing results if merging
+    existing_results = []
+    if merge_with_existing:
+        existing_results = load_existing_results(output_file)
+        existing_ids = {r.get('developer_id') for r in existing_results if 'developer_id' in r}
+        print(f"📋 Merging with {len(existing_results)} existing results")
     
     results = []
     results_lock = Lock()
@@ -143,10 +152,12 @@ def evaluate_all_developers(df: pd.DataFrame, prompt_template: str, max_develope
     def evaluate_single_developer(developer_data):
         """Evaluate a single developer's resume."""
         try:
+            # Replace placeholders in the prompt template
+            evaluation_prompt = prompt_template.replace("{dev_resume}", developer_data.get('resume_plain', ''))
+            evaluation_prompt = evaluation_prompt.replace("{country}", developer_data.get('country_name', ''))
+            
             # Evaluate the resume
-            evaluation_result = call_openai_api(
-                prompt_template.replace("${dev_resume}", developer_data['resume_plain'])
-            )
+            evaluation_result = call_openai_api(evaluation_prompt)
             
             # Create result
             result = {
@@ -197,9 +208,23 @@ def evaluate_all_developers(df: pd.DataFrame, prompt_template: str, max_develope
                 with results_lock:
                     results.append(result)
                     
+                    # Incrementally save results (merge with existing if needed)
+                    if merge_with_existing:
+                        # Create a dictionary of existing results by developer_id for quick lookup
+                        existing_dict = {r.get('developer_id'): r for r in existing_results if 'developer_id' in r}
+                        # Update existing results with new ones
+                        for new_result in results:
+                            dev_id = new_result.get('developer_id')
+                            if dev_id is not None:
+                                existing_dict[dev_id] = new_result
+                        # Combine: existing (not updated) + new results
+                        all_results = list(existing_dict.values())
+                    else:
+                        all_results = results
+                    
                     # Incrementally save results
                     with open(output_file, 'w', encoding='utf-8') as f:
-                        json.dump(results, f, indent=2, ensure_ascii=False)
+                        json.dump(all_results, f, indent=2, ensure_ascii=False)
                 
                 # Update progress
                 update_progress()
@@ -210,6 +235,16 @@ def evaluate_all_developers(df: pd.DataFrame, prompt_template: str, max_develope
                 continue
     
     print()  # New line after progress bar
+    
+    # Return merged results if needed
+    if merge_with_existing:
+        existing_dict = {r.get('developer_id'): r for r in existing_results if 'developer_id' in r}
+        for new_result in results:
+            dev_id = new_result.get('developer_id')
+            if dev_id is not None:
+                existing_dict[dev_id] = new_result
+        return list(existing_dict.values())
+    
     return results
 
 def save_evaluation_results(results: List[Dict], output_file: str = "evaluation_results.json"):
@@ -270,7 +305,7 @@ def parse_evaluation_response(response: str) -> Dict:
 def create_evaluation_dataframe(results: List[Dict]) -> pd.DataFrame:
     """
     Create a DataFrame from evaluation results with developer_id and parsed scores
-    matching the current evaluation prompt (a_XP, b_XP, c_XP, t1_XP, t2_XP, t3_XP, t4_XP).
+    matching the current evaluation prompt (pedigree flags: top companies and universities).
     
     Args:
         results (List[Dict]): List of evaluation results from evaluate_all_developers
@@ -279,8 +314,21 @@ def create_evaluation_dataframe(results: List[Dict]) -> pd.DataFrame:
         pd.DataFrame: DataFrame with developer_id and evaluation scores
     """
     # Define all expected fields from the prompt
+    expected_fields1 = [
+        'Primary_Category',
+        'Subcategory',
+        'Role_or_Specialty'
+    ]
+
     expected_fields = [
-        'a_XP', 'b_XP', 'c_XP', 't1_XP', 't2_XP', 't3_XP', 't4_XP'
+        'top_companies_faang',
+        'top_company_50',
+        'top_company_50_names',
+        'top_university_us',
+        'top_university_us_names',
+        'top_university_whole_list',
+        'top_university_whole_list_names',
+        'top_company_50_2yoe'
     ]
     
     evaluation_rows = []
@@ -417,6 +465,66 @@ def confirm_processing(df: pd.DataFrame, max_developers: int = None) -> bool:
     
     return True
 
+def load_existing_developer_ids(results_file: str = "evaluation_results.json") -> set:
+    """
+    Load developer_ids from existing evaluation results file.
+    
+    Args:
+        results_file (str): Path to the evaluation results JSON file
+        
+    Returns:
+        set: Set of developer_ids that have already been evaluated
+    """
+    import json
+    
+    existing_ids = set()
+    
+    try:
+        if os.path.exists(results_file):
+            with open(results_file, 'r', encoding='utf-8') as f:
+                existing_results = json.load(f)
+                
+            # Extract developer_ids from existing results
+            for result in existing_results:
+                if 'developer_id' in result:
+                    existing_ids.add(result['developer_id'])
+            
+            print(f"📋 Loaded {len(existing_ids)} existing developer_ids from {results_file}")
+        else:
+            print(f"📋 No existing results file found at {results_file}")
+            
+    except json.JSONDecodeError as e:
+        print(f"⚠️  Warning: Could not parse {results_file}: {e}")
+        print(f"   Will process all developers (no exclusions)")
+    except Exception as e:
+        print(f"⚠️  Warning: Error loading {results_file}: {e}")
+        print(f"   Will process all developers (no exclusions)")
+    
+    return existing_ids
+
+def load_existing_results(results_file: str = "evaluation_results.json") -> List[Dict]:
+    """
+    Load existing evaluation results from file.
+    
+    Args:
+        results_file (str): Path to the evaluation results JSON file
+        
+    Returns:
+        List[Dict]: List of existing evaluation results
+    """
+    import json
+    
+    try:
+        if os.path.exists(results_file):
+            with open(results_file, 'r', encoding='utf-8') as f:
+                existing_results = json.load(f)
+            return existing_results
+        else:
+            return []
+    except Exception as e:
+        print(f"⚠️  Warning: Could not load existing results from {results_file}: {e}")
+        return []
+
 def verify_prompt_replacement(developer_data: Dict, prompt_template: str) -> bool:
     """
     Verify that the prompt replacement is working correctly.
@@ -428,9 +536,13 @@ def verify_prompt_replacement(developer_data: Dict, prompt_template: str) -> boo
     Returns:
         bool: True if replacement works correctly
     """
-    # Check if placeholder exists in template
-    if "${dev_resume}" not in prompt_template:
-        print("❌ ERROR: ${dev_resume} placeholder not found in prompt template")
+    # Check if placeholders exist in template
+    if "{dev_resume}" not in prompt_template:
+        print("❌ ERROR: {dev_resume} placeholder not found in prompt template")
+        return False
+    
+    if "{country}" not in prompt_template:
+        print("❌ ERROR: {country} placeholder not found in prompt template")
         return False
     
     # Check if resume data exists
@@ -439,14 +551,19 @@ def verify_prompt_replacement(developer_data: Dict, prompt_template: str) -> boo
         return False
     
     # Perform replacement
-    evaluation_prompt = prompt_template.replace("${dev_resume}", developer_data['resume_plain'])
+    evaluation_prompt = prompt_template.replace("{dev_resume}", developer_data.get('resume_plain', ''))
+    evaluation_prompt = evaluation_prompt.replace("{country}", developer_data.get('country', ''))
     
     # Check if replacement worked
-    if "${dev_resume}" in evaluation_prompt:
-        print("❌ ERROR: ${dev_resume} placeholder still exists after replacement")
+    if "{dev_resume}" in evaluation_prompt:
+        print("❌ ERROR: {dev_resume} placeholder still exists after replacement")
         return False
     
-    if developer_data['resume_plain'] not in evaluation_prompt:
+    if "{country}" in evaluation_prompt:
+        print("❌ ERROR: {country} placeholder still exists after replacement")
+        return False
+    
+    if developer_data.get('resume_plain', '') not in evaluation_prompt:
         print("❌ ERROR: Resume data not found in final prompt")
         return False
     
@@ -509,6 +626,8 @@ if __name__ == "__main__":
         parser.add_argument("--csv", type=str, default="json_list.csv", help="Path to input CSV (default: json_list.csv)")
         parser.add_argument("--limit", type=int, default=None, help="Limit number of developers to process (e.g., 1 for single row)")
         parser.add_argument("--developer_id", type=int, default=None, help="Process only the specified developer_id")
+        parser.add_argument("--exclude-existing", action="store_true", help="Exclude developer_ids that are already in evaluation_results.json")
+        parser.add_argument("--results-file", type=str, default="evaluation_results.json", help="Path to evaluation results file (default: evaluation_results.json)")
         args = parser.parse_args()
 
         # Load developers (dataset contains only developer_id and resume_plain)
@@ -521,6 +640,18 @@ if __name__ == "__main__":
         else:
             print(f"\nProcessing {len(df)} developers from {args.csv}")
         
+        # Optional: exclude existing developer_ids
+        if args.exclude_existing:
+            existing_ids = load_existing_developer_ids(args.results_file)
+            if existing_ids:
+                original_count = len(df)
+                df = df[~df['developer_id'].isin(existing_ids)]
+                excluded_count = original_count - len(df)
+                print(f"🔍 Excluded {excluded_count} developers that are already in {args.results_file}")
+                print(f"📊 Remaining developers to process: {len(df)}")
+            else:
+                print(f"📊 No existing results found; processing all {len(df)} developers")
+        
         # Load the evaluation prompt template
         prompt_template = load_evaluation_prompt()
         
@@ -529,7 +660,14 @@ if __name__ == "__main__":
             # Show processing information and get confirmation
             if confirm_processing(df, max_developers=args.limit):
                 # Evaluate all developers with parallel processing and incremental saving
-                results = evaluate_all_developers(df, prompt_template, max_developers=args.limit, output_file="evaluation_results.json", max_workers=5)
+                results = evaluate_all_developers(
+                    df, 
+                    prompt_template, 
+                    max_developers=args.limit, 
+                    output_file=args.results_file, 
+                    max_workers=5,
+                    merge_with_existing=args.exclude_existing
+                )
                 
                 # Create DataFrame with parsed scores
                 evaluation_df = create_evaluation_dataframe(results)
@@ -539,7 +677,7 @@ if __name__ == "__main__":
                 
                 # Show final summary
                 print(f"\n✅ Completed evaluation of {len(results)} developers")
-                print(f"📁 Results saved to: evaluation_results.json and evaluation_scores.csv")
+                print(f"📁 Results saved to: {args.results_file} and evaluation_scores.csv")
             else:
                 print("❌ Processing cancelled by user")
         else:
