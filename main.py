@@ -320,17 +320,31 @@ def create_evaluation_dataframe(results: List[Dict]) -> pd.DataFrame:
         'Role_or_Specialty'
     ]
 
-    expected_fields = [
-        'top_companies_faang',
+    expected_fieldsa = [
+        'top_university_PhD',
+        'top_university_PhD_names',
+        'top_university_Post_doc',
+        'top_university_Post_doc_names',
         'top_company_50',
         'top_company_50_names',
+        'top_company_50_ic',
+        'matching_score'
+    ]
+
+    expected_fields = [
+        'top_companies_faang',
+        'top_company_tier_1',
+        'top_company_tier_1_names',
+        'top_company_tier_1_2yoe',
+        'top_company_tier_2',
+        'top_company_tier_2_names',
+        'top_company_tier_2_2yoe',
         'top_university_us',
         'top_university_us_names',
         'top_university_whole_list',
-        'top_university_whole_list_names',
-        'top_company_50_2yoe'
-    ]
-    
+        'top_university_whole_list_names'
+        ]
+
     evaluation_rows = []
     
     for result in results:
@@ -425,7 +439,7 @@ def estimate_processing_info(df: pd.DataFrame, max_developers: int = None) -> Di
     
     # Rough estimates (adjust based on your experience)
     avg_time_per_request = 2  # seconds (including API call + processing, with parallel processing)
-    estimated_cost_per_request = 0.01  # USD (rough estimate for GPT-4o)
+    estimated_cost_per_request = 0.014  # USD (rough estimate for GPT-4o)
     
     estimated_time_minutes = (rows_to_process * avg_time_per_request) / 60
     estimated_cost = rows_to_process * estimated_cost_per_request
@@ -598,11 +612,11 @@ def call_openai_api(prompt: str, api_key: Optional[str] = None) -> str:
         # Make the API call
         response = client.chat.completions.create(
             #model="gpt-3.5-turbo",  # You can change this to other models like "gpt-4"
-            model="gpt-4o",  # You can change this to other models like "gpt-4"
+            model="gpt-5.2",  # You can change this to other models like "gpt-4"
             messages=[
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=1000,  # Adjust as needed
+            max_completion_tokens=1000,  # Adjust as needed
             temperature=0.7   # Adjust creativity level (0.0 = deterministic, 1.0 = very creative)
         )
         

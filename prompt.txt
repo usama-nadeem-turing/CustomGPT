@@ -15,14 +15,29 @@ Extract these flags (exact matched strings from the resume):
 
 ## Top company flags
 
-    TOP COMPANY LIST (Top 50) - for variables starting with `top_company_50`
-        Google (Alphabet); Apple; Amazon; Meta (Facebook); Netflix; Microsoft; Tesla; NVIDIA; Adobe; Salesforce; Airbnb; Dropbox; Stripe; Palantir; Uber; Lyft; Square (Block); Twilio; Snap Inc.; Pinterest; GitHub; Atlassian; HashiCorp; Databricks; Snowflake; Cloudflare; DigitalOcean; MongoDB; Elastic; Confluent; Figma; Oracle; Cisco; Paypal; Doordash; Rivian; Reddit; Coinbase; Splunk; Goldman Sachs; Morgan Stanley; JPMorgan Chase; Capital One; Plaid; Shopify; Intuit; Workday; Spotify; ServiceNow; Hugging Face; VMware; Brex; Wise; Epic Games; Unity Technologies; Activision Blizzard; Riot Games; Valve; Huawei; Bloomberg; ByteDance; Alibaba; Baidu; Notion; Klarna; Instacart; Zillow; Ramp.
+    top_companies_faang: 1 if the candidate worked at any FAANG: Google/Alphabet, Apple, Amazon, Meta/Facebook, Netflix
+
+
+
+    TOP COMPANY LIST [Tier 1] - for variables starting with `top_company_tier_1`
+        'Google (Alphabet)';'Apple';'Amazon';'Meta (Facebook)';'Netflix';'Microsoft';'Tesla';'NVIDIA';'Adobe';'Salesforce';'Airbnb';'Dropbox';'Stripe';'Palantir';'Uber';'Lyft';'Square (Block)';'Twilio';'Snap Inc.';'Pinterest';'GitHub';'Atlassian';'HashiCorp';'Databricks';'Snowflake';'Cloudflare';'DigitalOcean';'MongoDB';'Elastic';'Confluent';'Figma';'Oracle';'Cisco';'Paypal';'Doordash';'Rivian';'Reddit';'Coinbase';'Splunk';'Goldman Sachs';'Morgan Stanley';'JPMorgan Chase';'Capital One';'Plaid';'Shopify';'Intuit';'Workday';'Spotify';'ServiceNow';'Hugging Face';'VMware';'Brex';'Wise';'Epic Games';'Unity Technologies';'Activision Blizzard';'Riot Games';'Valve';'Huawei';'Bloomberg';'ByteDance';'Alibaba';'Baidu';'Notion';'Klarna';'Instacart';'Zillow';'Ramp';'Visa';'Mastercard';'American Express';'BlackRock';'Charles Schwab';'Bank of America';'Zynga';'TripAdvisor';'Qualcomm';'Intel';'IBM';'Micron Technology';'Applied Materials';'LinkedIn';'Zoom';'GitLab';'Okta';'Akamai';'Asana';'SAP';'SpaceX';'X (Twitter)';'Slack';'Electronic Arts (EA)';'Cohere';'Grab';'Roblox';'Expedia Group';'HubSpot';'TikTok';'Yelp';'Ubisoft';'Booking.com';'Freshworks';'Datadog';'Fastly';'DocuSign';'UiPath';'Airtable';'Coda';'Grammarly';'Duolingo';'Coursera';'Blue Origin';'Anthropic';'Box';'Spotify';'Discord';'Twitch';'Canva';'Miro';'Reddit';'Atlassian Trello';'MuleSoft'
         - The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
 
-    top_companies_faang: 1 if the candidate worked at any FAANG: Google/Alphabet, Apple, Amazon, Meta/Facebook, Netflix
-    top_company_50: 1 if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
-    top_company_50_names: provide a semicolon separated list if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
-    top_company_50_2yoe: 1 if the talent has 2+ Years of experience at any of the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_company_tier_1: 1 if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_company_tier_1_names: provide a semicolon separated list if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_company_tier_1_2yoe: 1 if the talent has 2+ Years of experience at any of the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+
+
+
+
+    TOP COMPANY LIST [Tier 2] - for variables starting with `top_company_tier_2`
+        'Broadcom';'Hewlett Packard Enterprise (HPE)';'Dell Technologies';'Citigroup';'Lockheed Martin';'Raytheon Technologies';'Northrop Grumman';'Boeing';'CVS Health';'Johnson & Johnson';'Honeywell';'Caterpillar';'General Electric';'Qualtrics';'Siemens';'ADP';'Rockstar Games';'Confluent';'Red Hat';'ebay';'McKinsey & Company';'Coinbase Commerce';'Instabase';'Palantir Apollo (platform team)';'Agoda';'Postman';'Ripple';'Trivago';'Zoho';'Smartsheet';'Autodesk';'Guidewire Software';'Fidelity Investments';'Fiserv';'Nasdaq';'Disney';'Wayfair';'Chewy';'Peloton';'Blizzard Entertainment';'Compass';'Flexport';'Gusto';'Roku';'Paylocity';'Guidewire';'Substack';'Circle';'Walmart';'Target'
+        - The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+
+    top_company_tier_2: 1 if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_company_tier_2_names: provide a semicolon separated list if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_company_tier_2_2yoe: 1 if the talent has 2+ Years of experience at any of the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+
 
 
 ## Top university flags
@@ -55,14 +70,21 @@ Matching rules
 ```json
 {
   ""top_companies_faang"": ""[1/0]"",
-  ""top_company_50"": ""[1/0]"",
-  ""top_company_50_names"": ""[[Semicolon Separated List]]"",
+
+  ""top_company_tier_1"": ""[1/0]"",
+  ""top_company_tier_1_names"": ""[[Semicolon Separated List]]"",
+  ""top_company_tier_1_2yoe"": ""[1/0]""
+
+  ""top_company_tier_2"": ""[1/0]"",
+  ""top_company_tier_2_names"": ""[[Semicolon Separated List]]"",
+  ""top_company_tier_2_2yoe"": ""[1/0]""
+
   ""top_university_us"": ""[1/0]"",
   ""top_university_us_names"": ""[[Semicolon Separated List]]"",
   ""top_university_whole_list"": ""[1/0]"",
   ""top_university_whole_list_names"": ""[[Semicolon Separated List]]"",
-  ""top_company_50_2yoe"": ""[1/0]""
 }
+
 
 
 

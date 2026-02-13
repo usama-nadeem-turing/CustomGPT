@@ -106,6 +106,40 @@ python main.py --developer_id 12345
 python main.py --csv dev_data.csv --limit 50
 ```
 
+## BigQuery Integration (Optional)
+
+If your source data lives in BigQuery, you can use the helper script in `CustomGPT/BQ/`:
+
+- `BQ/bigquery_query.sql`: SQL query that selects the rows/columns you want.
+- `BQ/bigquery_to_csv.py`: Python script that runs the SQL against BigQuery and saves the results to a CSV.
+
+Typical workflow:
+
+1. **Run the BigQuery script to save data to CSV**  
+   From the project root or `CustomGPT/BQ`:
+   ```bash
+   # Example (adjust project/location as needed)
+   python CustomGPT/BQ/bigquery_to_csv.py \
+     --sql-file CustomGPT/BQ/bigquery_query.sql \
+     --output-csv dev_data_from_bq.csv \
+     --project-id your-gcp-project-id \
+     --location US
+   ```
+   This will create a CSV (e.g. `dev_data_from_bq.csv`) with the query results.
+
+2. **Update the prompt** (`prompt.txt`) to match the fields / evaluation you want.
+
+3. **Update `main.py`** so that:
+   - `load_dev_data` points to your new CSV if needed (`--csv dev_data_from_bq.csv`).
+   - `create_evaluation_dataframe`’s `expected_fields` matches the JSON schema returned by the model.
+
+4. **Run `main.py`** to evaluate the resumes using the new data and prompt:
+   ```bash
+   python main.py --csv dev_data_from_bq.csv
+   ```
+
+In short: **run the BQ script to save the data in a CSV file, then update the prompt, then update `main.py`, and finally run `main.py`.**
+
 ## Customization
 
 ### Custom Tailoring the Prompt and Script
