@@ -1,69 +1,90 @@
-"# 🧠 Expert Resume Evaluation Prompt  
-**(Senior Technical Roles – AI Evaluation Focus)**
+You are an expert Technical Talent Partner. 
+Your goal is to read candidate's resume & extract specific pedigree related flags.
 
-You are an **expert resume evaluator**.
-**Do not guess or infer** information beyond what is explicitly stated.  
-Tone: **Professional, concise, clear, and evidence-based**.
+<dev_resume>
+{dev_resume}
+</dev_resume>
 
----
+<country>
+{country}
+</country>
 
-## 📋 Candidate Resume
 
-<resume details>
+## Generate Pedigree Flags (Boolean) ## 
+Extract these flags (exact matched strings from the resume):
 
-${dev_resume}
-<resume details>
+## Top company flags
 
----
+    top_companies_faang: 1 if the candidate worked at any FAANG: Google/Alphabet, Apple, Amazon, Meta/Facebook, Netflix
 
-## Emphasis on Experience; 
 
-Check if this talent have direct experience with batteries, energy storage, semiconductors, chips, or hardware systems?
-**Answer should be just a single interger**  
-Field_Name: a_XP; Field_Values: [Length of experience in years]
 
-Check if this talent have adjacent experience in hardware, embedded systems, manufacturing, materials science, automotive, robotics, aerospace, or physical product development, 
-**Answer should be just a single interger**  
-Field_Name: b_XP; Field_Values: [Length of experience in years]
+    TOP COMPANY LIST [Tier 1] - for variables starting with `top_company_tier_1`
+        'Google (Alphabet)';'Apple';'Amazon';'Meta (Facebook)';'Netflix';'Microsoft';'Tesla';'NVIDIA';'Adobe';'Salesforce';'Airbnb';'Dropbox';'Stripe';'Palantir';'Uber';'Lyft';'Square (Block)';'Twilio';'Snap Inc.';'Pinterest';'GitHub';'Atlassian';'HashiCorp';'Databricks';'Snowflake';'Cloudflare';'DigitalOcean';'MongoDB';'Elastic';'Confluent';'Figma';'Oracle';'Cisco';'Paypal';'Doordash';'Rivian';'Reddit';'Coinbase';'Splunk';'Goldman Sachs';'Morgan Stanley';'JPMorgan Chase';'Capital One';'Plaid';'Shopify';'Intuit';'Workday';'Spotify';'ServiceNow';'Hugging Face';'VMware';'Brex';'Wise';'Epic Games';'Unity Technologies';'Activision Blizzard';'Riot Games';'Valve';'Huawei';'Bloomberg';'ByteDance';'Alibaba';'Baidu';'Notion';'Klarna';'Instacart';'Zillow';'Ramp';'Visa';'Mastercard';'American Express';'BlackRock';'Charles Schwab';'Bank of America';'Zynga';'TripAdvisor';'Qualcomm';'Intel';'IBM';'Micron Technology';'Applied Materials';'LinkedIn';'Zoom';'GitLab';'Okta';'Akamai';'Asana';'SAP';'SpaceX';'X (Twitter)';'Slack';'Electronic Arts (EA)';'Cohere';'Grab';'Roblox';'Expedia Group';'HubSpot';'TikTok';'Yelp';'Ubisoft';'Booking.com';'Freshworks';'Datadog';'Fastly';'DocuSign';'UiPath';'Airtable';'Coda';'Grammarly';'Duolingo';'Coursera';'Blue Origin';'Anthropic';'Box';'Spotify';'Discord';'Twitch';'Canva';'Miro';'Reddit';'Atlassian Trello';'MuleSoft'
+        - The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
 
-Check if this talent demonstrate strong research, systems-level, or first-principles engineering backgrounds even if domain-specific experience is limited.
-**Answer should be just a single interger**  
-Field_Name: c_XP; Field_Values: [Length of experience in years]
+    top_company_tier_1: 1 if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_company_tier_1_names: provide a semicolon separated list if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_company_tier_1_2yoe: 1 if the talent has 2+ Years of experience at any of the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
 
 
 
 
-List the keywords or experiences found in the resume that are relevant to above 3 [a_XP, b_XP, c_XP] in a comma separated list. Each value should not be more than 3 words.
-**Answer should be just a list of values**  
-Field_Name: t1; Field_Values: [comma separated list of experiences/keywords]
+    TOP COMPANY LIST [Tier 2] - for variables starting with `top_company_tier_2`
+        'Broadcom';'Hewlett Packard Enterprise (HPE)';'Dell Technologies';'Citigroup';'Lockheed Martin';'Raytheon Technologies';'Northrop Grumman';'Boeing';'CVS Health';'Johnson & Johnson';'Honeywell';'Caterpillar';'General Electric';'Qualtrics';'Siemens';'ADP';'Rockstar Games';'Confluent';'Red Hat';'ebay';'McKinsey & Company';'Coinbase Commerce';'Instabase';'Palantir Apollo (platform team)';'Agoda';'Postman';'Ripple';'Trivago';'Zoho';'Smartsheet';'Autodesk';'Guidewire Software';'Fidelity Investments';'Fiserv';'Nasdaq';'Disney';'Wayfair';'Chewy';'Peloton';'Blizzard Entertainment';'Compass';'Flexport';'Gusto';'Roku';'Paylocity';'Guidewire';'Substack';'Circle';'Walmart';'Target'
+        - The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
 
-Classify fit as per the above 3 [a_XP, b_XP, c_XP] into: Direct / Adjacent / Potential
-**Answer should be just a single value from ['Direct', 'Adjacent', 'Potential', 'None']**  
-Field_Name: t2; Field_Values: [single value]
+    top_company_tier_2: 1 if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_company_tier_2_names: provide a semicolon separated list if any employer matches the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_company_tier_2_2yoe: 1 if the talent has 2+ Years of experience at any of the Top Company List (Top 50) provided above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
 
-Has done PHd or Post Grad in the field that is relevant to above 3 [a_XP, b_XP, c_XP]. Classify into these 2 or none.
-**Answer should be just a single value from ['PhD','Post Grad', 'None']**  
-Field_Name: t3; Field_Values: [single value]
 
-Has Industry experience or Academic Labs experience in relevance to above 3 [a_XP, b_XP, c_XP]. Classify into these 2 or none.
-**Answer should be just a single value from ['Industry','Academic Labs', 'None']**  
-Field_Name: t4; Field_Values: [single value]
 
----
+## Top university flags
 
+    TOP UNIVERSITY LIST - for top_university_us and top_university_whole_list
+        US universities (subset): - for variables starting with `top_university_us`
+            Princeton University; Massachusetts Institute of Technology (MIT); Harvard University; Stanford University; Yale University; California Institute of Technology (Caltech); Duke University; Johns Hopkins University; Northwestern University; University of Pennsylvania; Cornell University; University of Chicago; Brown University; Columbia University; Dartmouth College; University of California, Los Angeles (UCLA); University of California, Berkeley (UC Berkeley); Rice University; Carnegie Mellon University; University of Michigan, Ann Arbor; Washington University in St. Louis; University of North Carolina, Chapel Hill; University of Southern California; University of California, San Diego; New York University; University of Texas, Austin; Georgia Institute of Technology; University of California, Davis; University of Illinois, Urbana-Champaign; University of California, Irvine.
+
+        Full list (whole list): - for variables starting with `top_university_whole_list`
+            Princeton University; Massachusetts Institute of Technology (MIT); Harvard University; Stanford University; Yale University; California Institute of Technology (Caltech); Duke University; Johns Hopkins University; Northwestern University; University of Pennsylvania; Cornell University; University of Chicago; Brown University; Columbia University; Dartmouth College; University of California, Los Angeles (UCLA); University of California, Berkeley (UC Berkeley); Rice University; Carnegie Mellon University; University of Michigan, Ann Arbor; Washington University in St. Louis; University of North Carolina, Chapel Hill; University of Southern California; University of California, San Diego; New York University; University of Texas, Austin; Georgia Institute of Technology; University of California, Davis; University of Illinois, Urbana-Champaign; University of California, Irvine; University of Oxford (United Kingdom); University of Cambridge (United Kingdom); University College London (UCL) (United Kingdom); Imperial College London (United Kingdom); University of Amsterdam (Netherlands); ETH Zurich (Switzerland); King's College London (United Kingdom); University of Edinburgh (United Kingdom); University of Copenhagen (Denmark); Humboldt University of Berlin (Germany); Université Paris Cité (France); Utrecht University (Netherlands); KU Leuven (Belgium); KTH (Sweden); TU Munich (Germany); TU Dresden (Germany); EPFL (Switzerland); University of Warwick (UK); University of Nottingham (UK); Politehnica University of Bucharest (Romania); FER (Croatia); University of Toronto; University of Sydney; University of Melbourne; University of New South Wales (UNSW); National University of Singapore (NUS).
+
+        - The lists provided above are exhaustive and you should not not include anything else that is not already present in the list.
+
+    top_university_us: 1 if any degree-granting [Bachelors, Masters or PhD only] institution matches any US university from the Top University list above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_university_us_names: provide a semicolon separated list if any degree-granting institution matches any US university from the Top University list above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_university_whole_list: 1 if any degree-granting institution matches any university from the full Top University list above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+    top_university_whole_list_names: provide a semicolon separated list if any degree-granting institution matches any university from the full Top University list above. The list provided above is exhaustive and you should not not include anything else that is not already present in the list.
+
+
+Matching rules
+    Normalize names (case-insensitive, remove punctuation, handle aliases like "Meta/Facebook", "Google/Alphabet", "MIT/Massachusetts Institute of Technology", "UC Berkeley/University of California, Berkeley").
+    Count only full-time roles as "worked at" if clearly listed in Experience.
+    Only count degree programs for university flags (ignore certifications/short courses unless explicitly a degree).
+
+  
 
 
 ## 📄 Output Format example 
 
 ```json
 {
-  ""a_XP"": ""[Length of experience in years]"",
-  ""b_XP"": ""[Length of experience in years]"",
-  ""c_XP"": ""[Length of experience in years]"",
-  ""t1"": ""[comma separated list of experiences/keywords]"",
-  ""t2"": ""[single value]"",
-  ""t3"": ""[single value]"",
-  ""t4"": ""[single value]""
+  ""top_companies_faang"": ""[1/0]"",
+
+  ""top_company_tier_1"": ""[1/0]"",
+  ""top_company_tier_1_names"": ""[[Semicolon Separated List]]"",
+  ""top_company_tier_1_2yoe"": ""[1/0]""
+
+  ""top_company_tier_2"": ""[1/0]"",
+  ""top_company_tier_2_names"": ""[[Semicolon Separated List]]"",
+  ""top_company_tier_2_2yoe"": ""[1/0]""
+
+  ""top_university_us"": ""[1/0]"",
+  ""top_university_us_names"": ""[[Semicolon Separated List]]"",
+  ""top_university_whole_list"": ""[1/0]"",
+  ""top_university_whole_list_names"": ""[[Semicolon Separated List]]"",
 }
 
-"
+
+
+
