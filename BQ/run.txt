@@ -1,0 +1,12 @@
+cd "D:\Desktop Files\Turing\Custom GPT\CustomGPT\BQ"
+python .\bigquery_to_csv.py `
+    --sql-file "bigquery_query.sql" `
+    --output-csv "dev_data_from_bq.csv" `
+    --project-id "turing-230020" `
+    --location "US"
+
+
+
+
+python main.py --csv "D:\Desktop Files\Turing\Custom GPT\CustomGPT\BQ\dev_data_from_bq.csv" --limit 1
+--exclude-existing
